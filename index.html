@@ -1,35 +1,72 @@
-<!-- Modal -->
-<div class="modal" id="modal">
-    <!-- المحتوى فقط (للصورة) -->
-    <div class="card-content" id="cardContent">
-        <div class="card-header">
-            <div class="subtitle">صدقة جارية</div>
-            <div class="main-title">دعاء لـ معاذ</div>
-        </div>
-        
-        <div class="divider-ornament">❋</div>
-        
-        <div class="dua-container">
-            <div class="dua-frame">
-                <div class="corner top-left">❈</div>
-                <div class="corner top-right">❈</div>
-                <div class="dua" id="cardDua">اللهم اجعل القرآن ربيع قلبه</div>
-                <div class="corner bottom-left">❈</div>
-                <div class="corner bottom-right">❈</div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معاذ - صدقة جارية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600&family=El+Messiri:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>معاذ</h1>
+            <div class="line"></div>
+            <p>صدقة جارية</p>
+        </header>
+
+        <section class="global-box">
+            <div class="label">المجموع العام</div>
+            <div class="number" id="globalCount">0</div>
+            <div class="name">دعاء لـ معاذ</div>
+        </section>
+
+        <section class="tasbih-box">
+            <div class="personal-count">
+                مساهمتك: <strong id="personalCount">0</strong>
             </div>
+            <div class="tasbih-circle" id="tasbihBtn">
+                <span>سبحان الله</span>
+            </div>
+            <div class="dots" id="dots"></div>
+        </section>
+
+        <div class="buttons">
+            <button class="btn" onclick="showCard()">بطاقة المشاركة</button>
+            <button class="btn primary" onclick="shareLink()">شارك التطبيق</button>
         </div>
-        
-        <div class="date-section">
-            <div class="date-line"></div>
-            <div class="date" id="cardDate">February 21, 2026</div>
-            <div class="date-line"></div>
+
+        <section class="dua-box">
+            <div class="dua-text" id="duaText">اللهم اغفر لمعاذ وارحمه وعافه واعف عنه</div>
+            <button class="dua-btn" onclick="newDua()">ادعُ لمعاذ</button>
+        </section>
+
+        <footer class="footer">
+            صدقة جارية عن روح معاذ<br>اللهم اجعله في عليين
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="card-content" id="cardContent">
+            <h2>معاذ</h2>
+            <div class="line"></div>
+            <div class="label">دعاء لـ معاذ</div>
+            <div class="dua-box">
+                <div class="dua" id="cardDua">اللهم اجعل القرآن ربيع قلبه</div>
+            </div>
+            <div class="date" id="cardDate"></div>
+        </div>
+        <div class="card-actions">
+            <button class="save-btn" onclick="saveImage()">حفظ كصورة</button>
+            <button class="copy-btn" onclick="copyText()">نسخ النص</button>
+            <button class="close-btn" onclick="closeCard()">إغلاق</button>
         </div>
     </div>
-    
-    <!-- الأزرار (خارج المحتوى) -->
-    <div class="card-actions">
-        <button class="save-btn" onclick="saveImage()">حفظ كصورة</button>
-        <button class="copy-btn" onclick="copyText()">نسخ النص</button>
-        <button class="close-btn" onclick="closeCard()">إغلاق</button>
-    </div>
-</div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
