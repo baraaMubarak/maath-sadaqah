@@ -1,4 +1,4 @@
-:root {
+ن:root {
     --primary: #4a5d4a;
     --secondary: #c4b59d;
     --bg: #f8f6f1;
@@ -79,4 +79,18 @@ body {
 /* Toast */
 .toast { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: #fff; padding: 15px 35px; border-radius: 30px; opacity: 0; transition: all 0.3s; z-index: 2000; }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.name-container {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    font-size: 3rem;
+    color: var(--primary);
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.name-container span {
+    display: inline-block;
+}
 
