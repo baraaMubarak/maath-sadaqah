@@ -1,26 +1,14 @@
 <!-- Modal -->
 <div class="modal" id="modal">
+    <!-- المحتوى فقط (للصورة) -->
     <div class="card-content" id="cardContent">
-        <!-- زخرفة علوية -->
-        <div class="ornament top">
-            <svg viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M100 0C60 0 40 20 0 20C40 20 60 40 100 40C140 40 160 20 200 20C160 20 140 0 100 0Z" fill="#c4b59d" opacity="0.3"/>
-                <circle cx="100" cy="20" r="8" fill="#4a5d4a"/>
-            </svg>
-        </div>
-        
-        <!-- العنوان الرئيسي -->
         <div class="card-header">
             <div class="subtitle">صدقة جارية</div>
             <div class="main-title">دعاء لـ معاذ</div>
         </div>
         
-        <!-- الخط الفاصل المزخرف -->
-        <div class="divider-ornament">
-            <span>❋</span>
-        </div>
+        <div class="divider-ornament">❋</div>
         
-        <!-- صندوق الدعاء -->
         <div class="dua-container">
             <div class="dua-frame">
                 <div class="corner top-left">❈</div>
@@ -31,23 +19,14 @@
             </div>
         </div>
         
-        <!-- التاريخ -->
         <div class="date-section">
             <div class="date-line"></div>
             <div class="date" id="cardDate">February 21, 2026</div>
             <div class="date-line"></div>
         </div>
-        
-        <!-- زخرفة سفلية -->
-        <div class="ornament bottom">
-            <svg viewBox="0 0 200 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 15 Q50 0 100 15 T200 15" stroke="#c4b59d" stroke-width="1" fill="none" opacity="0.5"/>
-                <circle cx="100" cy="15" r="5" fill="#4a5d4a" opacity="0.3"/>
-            </svg>
-        </div>
     </div>
     
-    <!-- الأزرار (ما تظهر في الصورة) -->
+    <!-- الأزرار (خارج المحتوى) -->
     <div class="card-actions">
         <button class="save-btn" onclick="saveImage()">حفظ كصورة</button>
         <button class="copy-btn" onclick="copyText()">نسخ النص</button>
