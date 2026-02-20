@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, increment, set } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyC_HXOPcbL80yEbWTx8KFJ5DS2lun5doJY",
@@ -15,169 +15,171 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// تهيئة العداد العام إذا ما موجود
+// تهيئة العداد العام
 const initGlobal = async () => {
     const globalRef = ref(db, 'global');
-    try {
-        await set(globalRef, {
-            totalTasbih: 0,
-            totalDuas: 0
-        });
-    } catch(e) {
-        console.log('Global already exists');
-    }
+    await update(globalRef, { totalTasbih: 0, totalDuas: 0 }).catch(() => {});
 };
 initGlobal();
 
-let deviceId = localStorage.getItem('maath_device_id');
+// بيانات المستخدم
+let deviceId = localStorage.getItem('maath_id');
 let personalCount = parseInt(localStorage.getItem('maath_count')) || 0;
 let sessionCount = 0;
-const adhkar = ["سبحان الله", "الحمد لله", "الله أكبر", "لا إله إلا الله", "أستغفر الله"];
 
 if (!deviceId) {
-    deviceId = 'user_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('maath_device_id', deviceId);
+    deviceId = 'u' + Date.now() + Math.random().toString(36).substr(2, 5);
+    localStorage.setItem('maath_id', deviceId);
 }
 
-const globalRef = ref(db, 'global/totalTasbih');
-
-// الاستماع للعداد العام
-onValue(globalRef, (snapshot) => {
-    const count = snapshot.val() || 0;
-    document.getElementById('globalCount').textContent = count.toLocaleString('ar-SA');
-});
+// الأذكار
+const adhkar = ['سبحان الله', 'الحمد لله', 'الله أكبر', 'لا إله إلا الله', 'أستغفر الله'];
 
 // إنشاء النقاط
-const dotsContainer = document.getElementById('progressDots');
+const dotsContainer = document.getElementById('dots');
 for (let i = 0; i < 33; i++) {
     const dot = document.createElement('div');
     dot.className = 'dot';
     dotsContainer.appendChild(dot);
 }
 
-function updateDots() {
-    const dots = document.querySelectorAll('.dot');
-    dots.forEach((dot, index) => {
-        dot.classList.toggle('active', index < (sessionCount % 33));
+// تحديث النقاط
+const updateDots = () => {
+    document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i < (sessionCount % 33));
     });
-}
+};
 
-document.getElementById('personalCount').textContent = personalCount;
+// تحويل الرقم للعربي
+const toArabic = (n) => n.toLocaleString('ar-SA');
+
+// الاستماع للعداد العام
+onValue(ref(db, 'global/totalTasbih'), (snap) => {
+    const count = snap.val() || 0;
+    document.getElementById('globalCount').textContent = toArabic(count);
+});
+
+// تحديث العرض
+document.getElementById('personalCount').textContent = toArabic(personalCount);
 updateDots();
 
 // السبحة
-document.getElementById('tasbihBtn').addEventListener('click', async function(e) {
-    const ripple = document.createElement('div');
-    ripple.className = 'ripple';
-    const rect = this.getBoundingClientRect();
-    const size = 20;
-    ripple.style.width = ripple.style.height = size + 'px';
-    ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
-    ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
-    this.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
-
+document.getElementById('tasbihBtn').addEventListener('click', async () => {
     personalCount++;
     sessionCount++;
     localStorage.setItem('maath_count', personalCount);
-    document.getElementById('personalCount').textContent = personalCount;
+    
+    document.getElementById('personalCount').textContent = toArabic(personalCount);
     updateDots();
-
-    const adhkarIndex = Math.floor(sessionCount / 33) % adhkar.length;
-    this.querySelector('.text').textContent = adhkar[adhkarIndex];
-
-    // تحديث Firebase
-    const userRef = ref(db, 'users/' + deviceId);
-    await update(userRef, {
+    
+    // تغيير الذكر
+    const dhikr = adhkar[Math.floor(sessionCount / 33) % adhkar.length];
+    document.querySelector('#tasbihBtn span').textContent = dhikr;
+    
+    // Firebase
+    await update(ref(db, 'users/' + deviceId), {
         count: personalCount,
         lastActive: Date.now()
     });
-
-    // زيادة العداد العام
-    await update(globalRef, increment(1));
-
-    if (navigator.vibrate) navigator.vibrate(10);
+    
+    await update(ref(db, 'global'), { totalTasbih: increment(1) });
+    
+    if (navigator.vibrate) navigator.vibrate(15);
 });
 
-// الدعاء
+// الأدعية
 const duas = [
-    "اللهم اغفر لمعاذ وارحمه وعافه واعف عنه",
-    "اللهم اجعل القرآن ربيع قلبه ونور صدره",
-    "اللهم أدخله الجنة بغير حساب ولا سابقة عذاب",
-    "اللهم اجمعنا به في الفردوس الأعلى",
-    "اللهم أنس وحشته في القبر ونور له مضجعه"
+    'اللهم اغفر لمعاذ وارحمه وعافه واعف عنه',
+    'اللهم اجعل القرآن ربيع قلبه ونور صدره',
+    'اللهم أدخله الجنة بغير حساب ولا سابقة عذاب',
+    'اللهم اجمعنا به في الفردوس الأعلى',
+    'اللهم أنس وحشته في القبر ونور له مضجعه'
 ];
 
-function sendDua() {
-    const randomDua = duas[Math.floor(Math.random() * duas.length)];
-    document.getElementById('duaText').textContent = `"${randomDua}"`;
+const newDua = () => {
+    const dua = duas[Math.floor(Math.random() * duas.length)];
+    document.getElementById('duaText').textContent = dua;
     showToast('تم الدعاء لمعاذ 🤍');
-    
-    const duaRef = ref(db, 'global/totalDuas');
-    update(duaRef, increment(1));
-}
+    update(ref(db, 'global'), { totalDuas: increment(1) });
+};
 
-// مشاركة التطبيق
-function shareApp() {
-    const count = document.getElementById('globalCount').textContent;
-    const text = `انضم لـ ${count} شخص تسبح لمعاذ 🤍\n\nhttps://maath-sadaqah.web.app`;
+// البطاقة
+const showCard = () => {
+    document.getElementById('cardCount').textContent = toArabic(personalCount);
+    document.getElementById('cardDua').textContent = duas[Math.floor(Math.random() * duas.length)];
     
-    if (navigator.share) {
-        navigator.share({ title: 'صدقة معاذ', text: text });
-    } else {
-        navigator.clipboard.writeText(text);
-        showToast('تم نسخ الرابط 📋');
-    }
-}
-
-// بطاقة المشاركة
-function showShareCard() {
-    document.getElementById('shareCount').textContent = personalCount.toLocaleString('ar-SA');
-    document.getElementById('shareDua').textContent = `"${duas[Math.floor(Math.random() * duas.length)]}"`;
-    
-    const today = new Date().toLocaleDateString('ar-SA', {
+    const date = new Date().toLocaleDateString('ar-SA', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     });
-    document.getElementById('shareDate').textContent = today;
+    document.getElementById('cardDate').textContent = date;
     
-    document.getElementById('shareModal').classList.add('active');
-}
+    document.getElementById('modal').classList.add('active');
+};
 
-function closeShare() {
-    document.getElementById('shareModal').classList.remove('active');
-}
+const closeCard = () => {
+    document.getElementById('modal').classList.remove('active');
+};
 
-function downloadCard() {
-    showToast('جاري التحميل... 📸');
+// حفظ كصورة
+const saveImage = async () => {
+    const card = document.getElementById('card');
     
-    // في النسخة المتقدمة: نستخدم html2canvas
-    // الآن: ننسخ نص البطاقة
-    const text = `معاذ - صدقة جارية\n\n${personalCount.toLocaleString('ar-SA')} تسبيحة\n\n${document.getElementById('shareDua').textContent}\n\n${document.getElementById('shareDate').textContent}`;
-    
+    try {
+        showToast('جاري إنشاء الصورة...');
+        
+        const canvas = await html2canvas(card, {
+            backgroundColor: '#f5f5f0',
+            scale: 2,
+            useCORS: true
+        });
+        
+        const link = document.createElement('a');
+        link.download = `معاذ-${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        
+        showToast('تم حفظ الصورة 📸');
+    } catch (err) {
+        showToast('حدث خطأ، جرب مرة أخرى');
+        console.error(err);
+    }
+};
+
+// نسخ النص
+const copyText = () => {
+    const text = `معاذ - صدقة جارية\n\n${personalCount} تسبيحة\n\n${document.getElementById('cardDua').textContent}`;
     navigator.clipboard.writeText(text);
-    showToast('تم نسخ البطاقة 📋');
-}
+    showToast('تم النسخ 📋');
+};
 
-function copyDua() {
-    const dua = document.getElementById('shareDua').textContent;
-    navigator.clipboard.writeText(dua);
-    showToast('تم نسخ الدعاء 🤍');
-}
+// مشاركة الرابط
+const shareLink = () => {
+    const url = 'https://baraamubarak.github.io/maath-sadaqah';
+    const text = `انضم لتسبيح ${document.getElementById('globalCount').textContent} مرة لمعاذ 🤍\n\n${url}`;
+    
+    if (navigator.share) {
+        navigator.share({ title: 'معاذ - صدقة جارية', text: text });
+    } else {
+        navigator.clipboard.writeText(text);
+        showToast('تم نسخ الرابط 📋');
+    }
+};
 
-function showToast(message) {
+// toast
+const showToast = (msg) => {
     const toast = document.getElementById('toast');
-    toast.textContent = message;
+    toast.textContent = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
-}
+    setTimeout(() => toast.classList.remove('show'), 2500);
+};
 
-// Global functions
-window.sendDua = sendDua;
-window.shareApp = shareApp;
-window.showShareCard = showShareCard;
-window.closeShare = closeShare;
-window.downloadCard = downloadCard;
-window.copyDua = copyDua;
+// global
+window.showCard = showCard;
+window.closeCard = closeCard;
+window.saveImage = saveImage;
+window.copyText = copyText;
+window.shareLink = shareLink;
+window.newDua = newDua;
 
