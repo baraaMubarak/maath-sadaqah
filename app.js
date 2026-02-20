@@ -15,14 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// تهيئة العداد
-const initGlobal = async () => {
-    try {
-        await update(ref(db, 'global'), { totalTasbih: 0, totalDuas: 0 });
-    } catch(e) {}
-};
-initGlobal();
-
 // بيانات المستخدم
 let deviceId = localStorage.getItem('maath_id');
 let personalCount = parseInt(localStorage.getItem('maath_count')) || 0;
@@ -50,13 +42,25 @@ const updateDots = () => {
     });
 };
 
-// الاستماع للعداد العام
-onValue(ref(db, 'global/totalTasbih'), (snap) => {
-    const count = snap.val() || 0;
-    document.getElementById('globalCount').textContent = count;
+// ✅ إصلاح: الاستماع لجميع المستخدمين وحساب المجموع
+const usersRef = ref(db, 'users');
+onValue(usersRef, (snapshot) => {
+    let total = 0;
+    const users = snapshot.val() || {};
+    
+    // جمع جميع التسبيحات من جميع المستخدمين
+    Object.values(users).forEach(user => {
+        total += (user.count || 0);
+    });
+    
+    // تحديث العداد العام في Firebase (للتأكد)
+    update(ref(db, 'global'), { totalTasbih: total });
+    
+    // عرض العداد
+    document.getElementById('globalCount').textContent = total;
 });
 
-// تحديث العرض
+// عرض العداد الشخصي
 document.getElementById('personalCount').textContent = personalCount;
 updateDots();
 
@@ -72,12 +76,11 @@ document.getElementById('tasbihBtn').addEventListener('click', async () => {
     const dhikr = adhkar[Math.floor(sessionCount / 33) % adhkar.length];
     document.querySelector('#tasbihBtn span').textContent = dhikr;
     
+    // تحديث المستخدم في Firebase
     await update(ref(db, 'users/' + deviceId), {
         count: personalCount,
         lastActive: Date.now()
     });
-    
-    await update(ref(db, 'global'), { totalTasbih: increment(1) });
     
     if (navigator.vibrate) navigator.vibrate(15);
 });
@@ -95,7 +98,6 @@ const newDua = () => {
     const dua = duas[Math.floor(Math.random() * duas.length)];
     document.getElementById('duaText').textContent = dua;
     showToast('تم الدعاء لمعاذ 🤍');
-    update(ref(db, 'global'), { totalDuas: increment(1) });
 };
 
 // البطاقة
@@ -117,15 +119,18 @@ const closeCard = () => {
     document.getElementById('modal').classList.remove('active');
 };
 
-// حفظ كصورة - بدون الأزرار
+// ✅ حفظ كصورة - فقط الجزء المرفق (بدون أزرار)
 const saveImage = async () => {
     const card = document.getElementById('card');
     
-    // إخفاء الأزرار مؤقتاً
+    // إخفاء الأزرار والإغلاق
     const actions = card.querySelector('.share-actions');
     const closeBtn = card.querySelector('.close-x');
     actions.style.display = 'none';
     closeBtn.style.display = 'none';
+    
+    // إضافة هوامش للصورة
+    card.style.padding = '60px 50px';
     
     try {
         showToast('جاري إنشاء الصورة...');
@@ -134,8 +139,10 @@ const saveImage = async () => {
             backgroundColor: '#f5f3ee',
             scale: 3,
             useCORS: true,
-            width: 320,
-            height: 580
+            width: 340,
+            height: 600,
+            x: -10,
+            y: -10
         });
         
         const link = document.createElement('a');
@@ -151,6 +158,7 @@ const saveImage = async () => {
         // إرجاع الأزرار
         actions.style.display = 'flex';
         closeBtn.style.display = 'flex';
+        card.style.padding = '50px 40px';
     }
 };
 
@@ -162,7 +170,8 @@ const copyText = () => {
 
 const shareLink = () => {
     const url = 'https://baraamubarak.github.io/maath-sadaqah';
-    const text = `انضم لتسبيح ${document.getElementById('globalCount').textContent} مرة لمعاذ 🤍\n\n${url}`;
+    const total = document.getElementById('globalCount').textContent;
+    const text = `انضم لتسبيح ${total} مرة لمعاذ 🤍\n\n${url}`;
     
     if (navigator.share) {
         navigator.share({ title: 'معاذ - صدقة جارية', text: text });
@@ -185,4 +194,3 @@ window.saveImage = saveImage;
 window.copyText = copyText;
 window.shareLink = shareLink;
 window.newDua = newDua;
-
