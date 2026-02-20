@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معاذ - صدقة جارية</title>
+    
+    <!-- خط Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #f5f5dc 0%, #e8e4d9 50%, #d4e4d1 100%);
+            min-height: 100vh;
+            color: #2c3e2c;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* الهيدر */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3d5a3d;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: #6b7c6b;
+            letter-spacing: 2px;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: #c9b896;
+            margin: 15px auto;
+        }
+
+        /* العداد العام */
+        .global-counter {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .global-counter .label {
+            font-size: 0.9rem;
+            color: #6b7c6b;
+            margin-bottom: 10px;
+        }
+
+        .global-counter .number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #3d5a3d;
+            direction: ltr;
+        }
+
+        .global-counter .name {
+            font-size: 1.1rem;
+            color: #8b7355;
+            margin-top: 5px;
+        }
+
+        /* السبحة */
+        .tasbih-section {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .tasbih-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                8px 8px 16px #d1d1d1,
+                -8px -8px 16px #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tasbih-circle:active {
+            transform: scale(0.95);
+            box-shadow: 
+                inset 4px 4px 8px #d1d1d1,
+                inset -4px -4px 8px #ffffff;
+        }
+
+        .tasbih-circle .text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #3d5a3d;
+            z-index: 2;
+        }
+
+        .tasbih-circle .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(61, 90, 61, 0.2);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .personal-count {
+            font-size: 1.2rem;
+            color: #6b7c6b;
+            margin-bottom: 10px;
+        }
+
+        .personal-count span {
+            font-weight: 700;
+            color: #3d5a3d;
+        }
+
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: #3d5a3d;
+        }
+
+        /* الأزرار */
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            color: #3d5a3d;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn.primary {
+            background: #3d5a3d;
+            color: white;
+        }
+
+        /* قسم الدعاء */
+        .dua-section {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dua-text {
+            font-size: 1.1rem;
+            color: #2c3e2c;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .dua-btn {
+            background: transparent;
+            border: 2px solid #3d5a3d;
+            color: #3d5a3d;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dua-btn:hover {
+            background: #3d5a3d;
+            color: white;
+        }
+
+        /* الفوتر */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #8b7355;
+            font-size: 0.85rem;
+        }
+
+        /* إشعار */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #3d5a3d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- الهيدر -->
+        <div class="header">
+            <h1>معاذ</h1>
+            <div class="divider"></div>
+            <div class="subtitle">صدقة جارية</div>
+        </div>
+
+        <!-- العداد العام -->
+        <div class="global-counter">
+            <div class="label">المجموع العام</div>
+            <div class="number" id="globalCount">0</div>
+            <div class="name">تسبيحة لـ معاذ</div>
+        </div>
+
+        <!-- السبحة -->
+        <div class="tasbih-section">
+            <div class="personal-count">
+                مساهمتك: <span id="personalCount">0</span>
+            </div>
+            
+            <div class="tasbih-circle" id="tasbihBtn">
+                <div class="text">سبحان الله</div>
+            </div>
+
+            <div class="progress-dots" id="progressDots">
+                <!-- 33 نقطة -->
+            </div>
+        </div>
+
+        <!-- الأزرار -->
+        <div class="buttons">
+            <button class="btn" onclick="showAdkar()">الأذكار</button>
+            <button class="btn primary" onclick="shareApp()">شارك</button>
+        </div>
+
+        <!-- قسم الدعاء -->
+        <div class="dua-section">
+            <div class="dua-text" id="duaText">
+                "اللهم اغفر لمعاذ وارحمه وعافه واعف عنه"
+            </div>
+            <button class="dua-btn" onclick="sendDua()">ادعُ لمعاذ</button>
+        </div>
+
+        <!-- الفوتر -->
+        <div class="footer">
+            صدقة جارية عن روح معاذ<br>
+            اللهم اجعله في عليين
+        </div>
+    </div>
+
+    <!-- إشعار -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
