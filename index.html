@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معاذ - صدقة جارية</title>
     
-    <!-- خط Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -28,7 +27,6 @@
             padding: 20px;
         }
 
-        /* الهيدر */
         .header {
             text-align: center;
             padding: 30px 0;
@@ -54,7 +52,6 @@
             margin: 15px auto;
         }
 
-        /* العداد العام */
         .global-counter {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -85,7 +82,6 @@
             margin-top: 5px;
         }
 
-        /* السبحة */
         .tasbih-section {
             background: rgba(255, 255, 255, 0.8);
             border-radius: 25px;
@@ -158,6 +154,7 @@
             justify-content: center;
             gap: 8px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .dot {
@@ -172,7 +169,6 @@
             background: #3d5a3d;
         }
 
-        /* الأزرار */
         .buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -203,7 +199,6 @@
             color: white;
         }
 
-        /* قسم الدعاء */
         .dua-section {
             background: rgba(255, 255, 255, 0.8);
             border-radius: 20px;
@@ -235,7 +230,6 @@
             color: white;
         }
 
-        /* الفوتر */
         .footer {
             text-align: center;
             padding: 20px;
@@ -243,7 +237,6 @@
             font-size: 0.85rem;
         }
 
-        /* إشعار */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -263,25 +256,131 @@
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        /* شاشة المشاركة */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .share-modal.active {
+            display: flex;
+        }
+
+        .share-card {
+            background: linear-gradient(145deg, #f5f5dc, #e8e4d9);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+            position: relative;
+            border: 3px solid #c9b896;
+        }
+
+        .share-card h2 {
+            color: #3d5a3d;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .share-card .divider {
+            width: 50px;
+            height: 2px;
+            background: #c9b896;
+            margin: 15px auto;
+        }
+
+        .share-card .count {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #3d5a3d;
+            margin: 20px 0;
+        }
+
+        .share-card .text {
+            color: #6b7c6b;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .share-card .dua {
+            background: rgba(255,255,255,0.6);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            color: #2c3e2c;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .share-card .date {
+            color: #8b7355;
+            font-size: 0.85rem;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #3d5a3d;
+            cursor: pointer;
+        }
+
+        .share-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .share-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .share-actions .download {
+            background: #3d5a3d;
+            color: white;
+        }
+
+        .share-actions .copy {
+            background: rgba(255,255,255,0.9);
+            color: #3d5a3d;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- الهيدر -->
         <div class="header">
             <h1>معاذ</h1>
             <div class="divider"></div>
             <div class="subtitle">صدقة جارية</div>
         </div>
 
-        <!-- العداد العام -->
         <div class="global-counter">
             <div class="label">المجموع العام</div>
             <div class="number" id="globalCount">0</div>
             <div class="name">تسبيحة لـ معاذ</div>
         </div>
 
-        <!-- السبحة -->
         <div class="tasbih-section">
             <div class="personal-count">
                 مساهمتك: <span id="personalCount">0</span>
@@ -291,18 +390,14 @@
                 <div class="text">سبحان الله</div>
             </div>
 
-            <div class="progress-dots" id="progressDots">
-                <!-- 33 نقطة -->
-            </div>
+            <div class="progress-dots" id="progressDots"></div>
         </div>
 
-        <!-- الأزرار -->
         <div class="buttons">
-            <button class="btn" onclick="showAdkar()">الأذكار</button>
-            <button class="btn primary" onclick="shareApp()">شارك</button>
+            <button class="btn" onclick="showShareCard()">بطاقة الدعاء</button>
+            <button class="btn primary" onclick="shareApp()">شارك التطبيق</button>
         </div>
 
-        <!-- قسم الدعاء -->
         <div class="dua-section">
             <div class="dua-text" id="duaText">
                 "اللهم اغفر لمعاذ وارحمه وعافه واعف عنه"
@@ -310,18 +405,31 @@
             <button class="dua-btn" onclick="sendDua()">ادعُ لمعاذ</button>
         </div>
 
-        <!-- الفوتر -->
         <div class="footer">
             صدقة جارية عن روح معاذ<br>
             اللهم اجعله في عليين
         </div>
     </div>
 
-    <!-- إشعار -->
+    <!-- شاشة المشاركة -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-card" id="shareCard">
+            <button class="close-btn" onclick="closeShare()">×</button>
+            <h2>معاذ</h2>
+            <div class="divider"></div>
+            <div class="count" id="shareCount">0</div>
+            <div class="text">تسبيحة لـ معاذ<br>منذ استخدامي للتطبيق</div>
+            <div class="dua" id="shareDua">"اللهم اجعل القرآن ربيع قلبه"</div>
+            <div class="date" id="shareDate"></div>
+            <div class="share-actions">
+                <button class="download" onclick="downloadCard()">حفظ الصورة</button>
+                <button class="copy" onclick="copyDua()">نسخ الدعاء</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
-    <!-- Firebase -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
-
