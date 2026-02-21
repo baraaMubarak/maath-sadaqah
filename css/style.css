@@ -108,4 +108,22 @@ body {
 .install-btn span {
     font-size: 1.1rem;
 }
+.install-btn {
+    width: 100%;
+    margin-top: 10px;
+    background: linear-gradient(145deg, #fff, #f5f5f0);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.install-btn.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.install-btn:hover {
+    background: #4a5d4a;
+    color: #fff;
+}
 
