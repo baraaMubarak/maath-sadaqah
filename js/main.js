@@ -183,3 +183,8 @@ function setupInstallButton() {
 
 // تشغيل التطبيق
 document.addEventListener('DOMContentLoaded', init);
+// تهيئة التسبيح
+function initTasbih(person) {
+    // ما نحتاج نعمل destroy، فقط نعمل instance جديد
+    currentTasbih = new Tasbih(person);
+}
