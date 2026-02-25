@@ -10,10 +10,7 @@ import {
     copyText, 
     shareLink,
     initPersonsUI,
-    openAddPersonModal,
     closeAddPersonModal,
-    addNewPerson,
-    selectPerson,
     updateUIForPerson
 } from './ui.js';
 
@@ -24,7 +21,6 @@ class PersonsManager {
             { id: 'default', name: 'معاذ', colorIndex: 0, isDefault: true }
         ];
         this.currentPersonId = localStorage.getItem('maath_current_person') || 'default';
-        this.tasbihInstances = {};
     }
 
     getCurrentPerson() {
@@ -64,11 +60,10 @@ const personsManager = new PersonsManager();
 let currentTasbih = null;
 let globalCount = 0;
 
-// تهيئة الواجهة
 function init() {
     const currentPerson = personsManager.getCurrentPerson();
     
-    // تحديث UI حسب الشخص الحالي
+    // تحديث UI
     updateUIForPerson(currentPerson, personsManager.getCurrentPersonIndex());
     
     // تهيئة قائمة الأشخاص
@@ -93,32 +88,10 @@ function init() {
     // إعداد زر التثبيت
     setupInstallButton();
 
-    // توفير الدوال للـ HTML
-    window.newDua = () => newDua(personsManager.getCurrentPerson().name);
-    window.showCard = () => showCard(personsManager.getCurrentPerson());
-    window.closeCard = closeCard;
-    window.saveImage = saveImage;
-    window.copyText = copyText;
-    window.shareLink = () => shareLink(globalCount);
-    window.openAddPersonModal = openAddPersonModal;
-    window.closeAddPersonModal = closeAddPersonModal;
-    window.addNewPerson = () => {
-        const name = document.getElementById('newPersonName').value.trim();
-        if (name) {
-            const newPerson = personsManager.addPerson(name);
-            initPersonsUI(personsManager.getAllPersons(), newPerson.id, (id) => {
-                const person = personsManager.selectPerson(id);
-                updateUIForPerson(person, personsManager.getCurrentPersonIndex());
-                initTasbih(person);
-            });
-            closeAddPersonModal();
-            selectPerson(newPerson.id);
-            showToast(`تم إضافة ${name} ✅`);
-        }
-    };
+    // ربط الأزرار
+    setupButtons();
 }
 
-// تهيئة التسبيح
 function initTasbih(person) {
     if (currentTasbih) {
         currentTasbih.destroy();
@@ -126,7 +99,6 @@ function initTasbih(person) {
     currentTasbih = new Tasbih(person);
 }
 
-// تسجيل Service Worker
 function registerSW() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js')
@@ -135,7 +107,6 @@ function registerSW() {
     }
 }
 
-// إعداد زر التثبيت
 function setupInstallButton() {
     let deferredPrompt = null;
     const installBtn = document.getElementById('installBtn');
@@ -181,10 +152,110 @@ function setupInstallButton() {
     }
 }
 
+// ===== ربط الأزرار =====
+function setupButtons() {
+    // زر إضافة شخص
+    const addPersonBtn = document.getElementById('addPersonBtn');
+    if (addPersonBtn) {
+        addPersonBtn.addEventListener('click', openAddPersonModal);
+    }
+
+    // زر اختيار الشخص
+    const personSelector = document.getElementById('personSelector');
+    if (personSelector) {
+        personSelector.addEventListener('click', togglePersonsList);
+    }
+
+    // أزرار Modal إضافة شخص
+    const cancelBtn = document.querySelector('.modal-actions .cancel');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeAddPersonModal);
+    }
+
+    const addBtn = document.querySelector('.modal-actions .primary');
+    if (addBtn) {
+        addBtn.addEventListener('click', addNewPerson);
+    }
+
+    // أزرار البطاقة
+    const showCardBtn = document.querySelector('.buttons .btn:not(.primary)');
+    if (showCardBtn) {
+        showCardBtn.addEventListener('click', () => {
+            showCard(personsManager.getCurrentPerson());
+        });
+    }
+
+    const shareBtn = document.querySelector('.buttons .btn.primary');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', () => shareLink(globalCount));
+    }
+
+    // زر الدعاء
+    const duaBtn = document.querySelector('.dua-btn');
+    if (duaBtn) {
+        duaBtn.addEventListener('click', () => {
+            newDua(personsManager.getCurrentPerson().name);
+        });
+    }
+
+    // أزرار Modal البطاقة
+    const closeCardBtn = document.querySelector('.close-btn');
+    if (closeCardBtn) {
+        closeCardBtn.addEventListener('click', closeCard);
+    }
+
+    const saveImageBtn = document.querySelector('.save-btn');
+    if (saveImageBtn) {
+        saveImageBtn.addEventListener('click', saveImage);
+    }
+
+    const copyTextBtn = document.querySelector('.copy-btn');
+    if (copyTextBtn) {
+        copyTextBtn.addEventListener('click', copyText);
+    }
+}
+
+// ===== دوال مساعدة =====
+function togglePersonsList() {
+    const list = document.getElementById('personsList');
+    const selector = document.getElementById('personSelector');
+    
+    if (list && selector) {
+        list.classList.toggle('active');
+        selector.classList.toggle('active');
+    }
+}
+
+function openAddPersonModal() {
+    const modal = document.getElementById('addPersonModal');
+    const input = document.getElementById('newPersonName');
+    if (modal) {
+        modal.classList.add('active');
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+    }
+}
+
+function addNewPerson() {
+    const input = document.getElementById('newPersonName');
+    const name = input ? input.value.trim() : '';
+    
+    if (name) {
+        const newPerson = personsManager.addPerson(name);
+        
+        // تحديث قائمة الأشخاص
+        initPersonsUI(personsManager.getAllPersons(), newPerson.id, (id) => {
+            const person = personsManager.selectPerson(id);
+            updateUIForPerson(person, personsManager.getCurrentPersonIndex());
+            initTasbih(person);
+        });
+        
+        closeAddPersonModal();
+        showToast(`تم إضافة ${name} ✅`);
+    }
+}
+
 // تشغيل التطبيق
 document.addEventListener('DOMContentLoaded', init);
-// تهيئة التسبيح
-function initTasbih(person) {
-    // ما نحتاج نعمل destroy، فقط نعمل instance جديد
-    currentTasbih = new Tasbih(person);
-}
