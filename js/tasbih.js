@@ -16,6 +16,9 @@ export class Tasbih {
             text: document.querySelector('#tasbihBtn span')
         };
 
+        // حفظ reference للـ handler عشان نقدر نحذفه بعدين
+        this.clickHandler = () => this.click();
+
         this.init();
     }
 
@@ -49,7 +52,9 @@ export class Tasbih {
         }
 
         this.updateDisplay();
-        this.elements.btn.addEventListener('click', () => this.click());
+        
+        // إضافة الـ event listener
+        this.elements.btn.addEventListener('click', this.clickHandler);
     }
 
     click() {
@@ -60,25 +65,18 @@ export class Tasbih {
         this.updateDisplay();
         updateUserCount(`${this.deviceId}_${this.person.id}`, this.count);
 
-        // اهتزاز
         if (navigator.vibrate) navigator.vibrate(15);
-
-        // animation
-        this.elements.btn.classList.add('clicking');
-        setTimeout(() => this.elements.btn.classList.remove('clicking'), 300);
     }
 
     updateDisplay() {
         this.elements.personalCount.textContent = this.count.toLocaleString('ar-SA');
 
-        // تحديث النقاط
         const dots = this.elements.dots.querySelectorAll('.dot');
         const activeDots = this.sessionCount % 33;
         dots.forEach((dot, i) => {
             dot.classList.toggle('active', i < activeDots);
         });
 
-        // تغيير الذكر
         const dhikrIndex = Math.floor(this.sessionCount / 33) % adhkar.length;
         this.elements.text.textContent = adhkar[dhikrIndex];
     }
@@ -88,8 +86,9 @@ export class Tasbih {
     }
 
     destroy() {
-        // إزالة event listeners إذا لزم
-        const newBtn = this.elements.btn.cloneNode(true);
-        this.elements.btn.parentNode.replaceChild(newBtn, this.elements.btn);
+        // إزالة الـ event listener بشكل صحيح
+        if (this.elements.btn && this.clickHandler) {
+            this.elements.btn.removeEventListener('click', this.clickHandler);
+        }
     }
 }
