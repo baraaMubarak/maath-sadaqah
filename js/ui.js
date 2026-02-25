@@ -57,59 +57,90 @@ export function initPersonsUI(persons, currentId, onSelect) {
         const colors = getPersonColor(index);
         const item = document.createElement('div');
         item.className = `person-item ${person.id === currentId ? 'active' : ''}`;
+        item.dataset.id = person.id;
+        
         item.innerHTML = `
             <div class="avatar" style="background: ${colors.primary}">${person.name.charAt(0)}</div>
             <span class="name">${person.name}</span>
         `;
-        item.onclick = () => {
+        
+        item.onclick = (e) => {
+            e.stopPropagation();
+            
+            document.querySelectorAll('.person-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            item.classList.add('active');
             onSelect(person.id);
-            togglePersonsList(false);
         };
+        
         scroll.appendChild(item);
     });
     
-    // فتح/إغلاق القائمة
-    selector.onclick = () => togglePersonsList();
+    if (selector) {
+        selector.onclick = (e) => {
+            e.stopPropagation();
+            togglePersonsList();
+        };
+    }
+    
+    document.addEventListener('click', (e) => {
+        const list = document.getElementById('personsList');
+        const selector = document.getElementById('personSelector');
+        
+        if (list && selector && 
+            !list.contains(e.target) && 
+            !selector.contains(e.target)) {
+            list.classList.remove('active');
+            selector.classList.remove('active');
+        }
+    });
 }
 
-function togglePersonsList(forceState) {
+function togglePersonsList() {
     const list = document.getElementById('personsList');
     const selector = document.getElementById('personSelector');
-    const isActive = list.classList.contains('active');
-    const newState = forceState !== undefined ? forceState : !isActive;
     
-    if (newState) {
-        list.classList.add('active');
-        selector.classList.add('active');
-    } else {
-        list.classList.remove('active');
-        selector.classList.remove('active');
+    if (list && selector) {
+        const isActive = list.classList.contains('active');
+        
+        if (isActive) {
+            list.classList.remove('active');
+            selector.classList.remove('active');
+        } else {
+            list.classList.add('active');
+            selector.classList.add('active');
+        }
     }
-}
-
-export function selectPerson(id) {
-    document.querySelectorAll('.person-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.id === id) item.classList.add('active');
-    });
 }
 
 // ===== Modal إضافة شخص =====
 export function openAddPersonModal() {
     const modal = document.getElementById('addPersonModal');
     const input = document.getElementById('newPersonName');
-    modal.classList.add('active');
-    input.value = '';
-    input.focus();
     
-    // تحديث لون المعاينة
-    const persons = JSON.parse(localStorage.getItem('maath_persons')) || [];
-    const nextColor = getPersonColor(persons.length);
-    document.getElementById('colorPreview').style.background = nextColor.primary;
+    if (modal) {
+        modal.classList.add('active');
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        
+        const persons = JSON.parse(localStorage.getItem('maath_persons')) || [];
+        const nextColor = getPersonColor(persons.length);
+        const preview = document.getElementById('colorPreview');
+        if (preview) {
+            preview.style.background = nextColor.primary;
+        }
+    }
 }
 
 export function closeAddPersonModal() {
-    document.getElementById('addPersonModal').classList.remove('active');
+    const modal = document.getElementById('addPersonModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 // ===== Modal البطاقة =====
