@@ -121,8 +121,26 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+
+<script>
+    // إنشاء رقم عشوائي بناءً على الوقت الحالي
+    const timestamp = Date.now(); // مثال: 1708871234567
+    
+    // إنشاء عنصر script جديد
+    const script = document.createElement('script');
+    script.type = 'module';
+    
+    // الرابط يصبح: js/main.js?v=1708871234567
+    script.src = 'js/main.js?v=' + timestamp;
+    
+    // إضافة الـ script للصفحة
+    document.body.appendChild(script);
+</script>
+
+
+
+
 </body>
 <script>
     // إجبار تحديث الـ CSS
