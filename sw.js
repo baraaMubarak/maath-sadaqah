@@ -1,16 +1,17 @@
 const CACHE_NAME = 'maath-v1';
 const STATIC_ASSETS = [
-    '/maath-sadaqah/',
-    '/maath-sadaqah/index.html',
-    '/maath-sadaqah/css/style.css',
-    '/maath-sadaqah/js/main.js',
-    '/maath-sadaqah/js/config.js',
-    '/maath-sadaqah/js/db.js',
-    '/maath-sadaqah/js/tasbih.js',
-    '/maath-sadaqah/js/ui.js',
+    './',
+    './index.html',
+    './css/style.css',
+    './js/main.js',
+    './js/config.js',
+    './js/db.js',
+    './js/tasbih.js',
+    './js/ui.js',
     'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600&family=El+Messiri:wght@400;500;600&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
 ];
+
 
 // تثبيت الـ Service Worker
 self.addEventListener('install', (event) => {
