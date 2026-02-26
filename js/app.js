@@ -172,6 +172,10 @@ function clickTasbih() {
     localStorage.setItem(`count_${currentPersonId}`, count);
     document.getElementById('personalCount').textContent = count;
     
+    // تحديث Firebase
+    const person = persons.find(p => p.id === currentPersonId);
+    updateGlobalCount(currentPersonId, count);
+    
     // تحديث النقاط
     const dots = document.querySelectorAll('.dot');
     const active = sessionCount % 33;
@@ -181,9 +185,9 @@ function clickTasbih() {
     const dhikrIndex = Math.floor(sessionCount / 33) % 5;
     document.querySelector('#tasbihBtn span').textContent = adhkar[dhikrIndex];
     
-    // اهتزاز
     if (navigator.vibrate) navigator.vibrate(15);
 }
+
 
 // ===== الأزرار =====
 function setupButtons() {
