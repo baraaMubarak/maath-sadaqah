@@ -1,4 +1,4 @@
-// ===== Firebase =====
+// ===== Firebase Config =====
 const firebaseConfig = {
     apiKey: "AIzaSyC_HXOPcbL80yEbWTx8KFJ5DS2lun5doJY",
     authDomain: "maath-sadaqah.firebaseapp.com",
@@ -9,73 +9,29 @@ const firebaseConfig = {
     appId: "1:563608713392:web:2f0bd4f0fbdd8790f0e375"
 };
 
-// تحميل Firebase
-const firebaseScript = document.createElement('script');
-firebaseScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
-document.head.appendChild(firebaseScript);
-
-const dbScript = document.createElement('script');
-dbScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
-document.head.appendChild(dbScript);
-
-let db = null;
-let globalCount = 0;
-
-// انتظار تحميل Firebase
-setTimeout(() => {
-    if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        listenToGlobalCount();
-    }
-}, 1000);
-
-// الاستماع للعداد العام
-function listenToGlobalCount() {
-    if (!db) return;
-    
-    db.ref('global/total').on('value', (snapshot) => {
-        globalCount = snapshot.val() || 0;
-        document.getElementById('globalCount').textContent = globalCount.toLocaleString('ar-SA');
-    });
-}
-
-// تحديث العداد في Firebase
-function updateGlobalCount(personId, count) {
-    if (!db) return;
-    
-    const deviceId = localStorage.getItem('maath_device') || 'device_' + Date.now();
-    localStorage.setItem('maath_device', deviceId);
-    
-    db.ref(`users/${deviceId}_${personId}`).set({
-        count: count,
-        timestamp: Date.now()
-    });
-    
-    // حساب المجموع
-    db.ref('users').once('value', (snapshot) => {
-        let total = 0;
-        snapshot.forEach((child) => {
-            total += child.val().count || 0;
-        });
-        db.ref('global/total').set(total);
-    });
-}
-
-
 // ===== البيانات =====
 const adhkar = ['سبحان الله', 'الحمد لله', 'الله أكبر', 'لا إله إلا الله', 'أستغفر الله'];
 
 const duas = [
-    'اللهم اغفر لمعاذ وارحمه وعافه واعفُ عنه',
-    'اللهم اجعل قبر معاذ روضةً من رياض الجنة',
-    'اللهم آنس وحشة معاذ في قبره'
+    'اللهم اغفر لمعاذ وارحمه وعافه واعفُ عنه وأكرم نزله ووسع مدخله',
+    'اللهم اجعل قبر معاذ روضةً من رياض الجنة ولا تجعله حفرةً من حفر النار',
+    'اللهم آنس وحشة معاذ في قبره ونوّر له مضجعه',
+    'اللهم أدخل معاذ الجنة بغير حساب ولا سابقة عذاب',
+    'اللهم اجمعنا بمعاذ في الفردوس الأعلى من الجنة',
+    'اللهم ارفع درجات معاذ في عليين واكتب له الأجر إلى يوم الدين',
+    'اللهم تقبل معاذ في زمرة الشهداء والصالحين',
+    'اللهم اجعل القرآن العظيم شفيعًا لمعاذ يوم القيامة',
+    'اللهم اجعل أعمال معاذ الصالحة نورًا له في ظلمات القبر',
+    'اللهم وسّع قبر معاذ مدّ بصره وافرش له من الجنة'
 ];
 
 const personColors = [
     { primary: '#4a5d4a', secondary: '#c4b59d', bg: '#f8f6f1' },
     { primary: '#5d4a4a', secondary: '#c4a59d', bg: '#f8f1f1' },
-    { primary: '#4a5a5d', secondary: '#9db5c4', bg: '#f1f6f8' }
+    { primary: '#4a5a5d', secondary: '#9db5c4', bg: '#f1f6f8' },
+    { primary: '#5d4a5a', secondary: '#b59dc4', bg: '#f6f1f8' },
+    { primary: '#5a5d4a', secondary: '#b5c49d', bg: '#f5f8f1' },
+    { primary: '#4a4a5d', secondary: '#9d9dc4', bg: '#f1f1f8' }
 ];
 
 // ===== المتغيرات =====
@@ -83,9 +39,26 @@ let persons = [];
 let currentPersonId = null;
 let count = 0;
 let sessionCount = 0;
+let db = null;
+let globalCount = 0;
+let deferredPrompt = null;
+let deviceId = null;
 
 // ===== التهيئة =====
 function init() {
+    // تسجيل Service Worker
+    registerSW();
+    
+    // تحميل Firebase
+    loadFirebase();
+    
+    // تحميل الجهاز ID
+    deviceId = localStorage.getItem('maath_device');
+    if (!deviceId) {
+        deviceId = 'd' + Date.now() + Math.random().toString(36).substr(2, 5);
+        localStorage.setItem('maath_device', deviceId);
+    }
+    
     // تحميل الأشخاص
     const saved = localStorage.getItem('maath_persons');
     persons = saved ? JSON.parse(saved) : [{ id: '1', name: 'معاذ', colorIndex: 0 }];
@@ -93,7 +66,7 @@ function init() {
     const savedCurrent = localStorage.getItem('maath_current');
     currentPersonId = savedCurrent || '1';
     
-    // إذا الشخص الحالي مش موجود، رجع للأول
+    // إذا الشخص الحالي مش موجود
     const current = persons.find(p => p.id === currentPersonId);
     if (!current) {
         currentPersonId = persons[0].id;
@@ -103,18 +76,84 @@ function init() {
     selectPerson(currentPersonId);
     initTasbih();
     setupButtons();
+    setupInstallButton();
+}
+
+// ===== تسجيل Service Worker =====
+function registerSW() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW registered'))
+            .catch(err => console.log('SW error:', err));
+    }
+}
+
+// ===== تحميل Firebase =====
+function loadFirebase() {
+    // تحميل سكربتات Firebase
+    const appScript = document.createElement('script');
+    appScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+    appScript.onload = () => {
+        const dbScript = document.createElement('script');
+        dbScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+        dbScript.onload = initFirebase;
+        document.head.appendChild(dbScript);
+    };
+    document.head.appendChild(appScript);
+}
+
+function initFirebase() {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        listenToGlobalCount();
+    } catch (err) {
+        console.error('Firebase init error:', err);
+    }
+}
+
+// ===== الاستماع للعداد العام =====
+function listenToGlobalCount() {
+    if (!db) return;
+    
+    db.ref('users').on('value', (snapshot) => {
+        let total = 0;
+        const users = snapshot.val() || {};
+        Object.values(users).forEach(user => {
+            total += user.count || 0;
+        });
+        globalCount = total;
+        document.getElementById('globalCount').textContent = total.toLocaleString('ar-SA');
+        
+        // تحديث في Firebase
+        db.ref('global/total').set(total);
+    });
+}
+
+// ===== تحديث العداد في Firebase =====
+function updateFirebaseCount() {
+    if (!db || !currentPersonId) return;
+    
+    const userRef = db.ref(`users/${deviceId}_${currentPersonId}`);
+    userRef.set({
+        count: count,
+        personName: persons.find(p => p.id === currentPersonId)?.name || 'unknown',
+        timestamp: Date.now()
+    });
 }
 
 // ===== عرض الأشخاص =====
 function renderPersons() {
     const scroll = document.getElementById('personsScroll');
+    if (!scroll) return;
+    
     scroll.innerHTML = '';
     
     persons.forEach((person, index) => {
         const div = document.createElement('div');
         div.className = 'person-item' + (person.id === currentPersonId ? ' active' : '');
         div.innerHTML = `
-            <div class="avatar" style="background:${personColors[index % 3].primary}">${person.name[0]}</div>
+            <div class="avatar" style="background:${personColors[index % 6].primary}">${person.name[0]}</div>
             <span class="name">${person.name}</span>
         `;
         div.onclick = () => selectPerson(person.id);
@@ -128,10 +167,11 @@ function selectPerson(id) {
     localStorage.setItem('maath_current', id);
     
     const person = persons.find(p => p.id === id);
-    const color = personColors[person.colorIndex % 3];
+    const color = personColors[person.colorIndex % 6];
     
     // تحديث CSS
     document.documentElement.style.setProperty('--primary', color.primary);
+    document.documentElement.style.setProperty('--secondary', color.secondary);
     document.documentElement.style.setProperty('--bg', color.bg);
     
     // تحديث الهيدر
@@ -149,7 +189,9 @@ function selectPerson(id) {
     // تحميل العداد
     const savedCount = localStorage.getItem(`count_${id}`);
     count = savedCount ? parseInt(savedCount) : 0;
+    sessionCount = 0;
     document.getElementById('personalCount').textContent = count;
+    updateDots();
     
     // إغلاق القائمة
     document.getElementById('personsList').classList.remove('active');
@@ -170,24 +212,27 @@ function clickTasbih() {
     count++;
     sessionCount++;
     localStorage.setItem(`count_${currentPersonId}`, count);
-    document.getElementById('personalCount').textContent = count;
+    document.getElementById('personalCount').textContent = count.toLocaleString('ar-SA');
     
     // تحديث Firebase
-    const person = persons.find(p => p.id === currentPersonId);
-    updateGlobalCount(currentPersonId, count);
+    updateFirebaseCount();
     
     // تحديث النقاط
-    const dots = document.querySelectorAll('.dot');
-    const active = sessionCount % 33;
-    dots.forEach((d, i) => d.classList.toggle('active', i < active));
+    updateDots();
     
     // تغيير الذكر
     const dhikrIndex = Math.floor(sessionCount / 33) % 5;
     document.querySelector('#tasbihBtn span').textContent = adhkar[dhikrIndex];
     
+    // اهتزاز
     if (navigator.vibrate) navigator.vibrate(15);
 }
 
+function updateDots() {
+    const dots = document.querySelectorAll('.dot');
+    const active = sessionCount % 33;
+    dots.forEach((d, i) => d.classList.toggle('active', i < active));
+}
 
 // ===== الأزرار =====
 function setupButtons() {
@@ -228,6 +273,42 @@ function setupButtons() {
     document.getElementById('shareBtn').onclick = shareLink;
 }
 
+// ===== زر التثبيت =====
+function setupInstallButton() {
+    const installBtn = document.getElementById('installBtn');
+    if (!installBtn) return;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
+        installBtn.classList.add('show');
+    });
+    
+    installBtn.onclick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            showToast('تم تثبيت التطبيق ✅');
+            installBtn.style.display = 'none';
+        } else {
+            showToast('يمكنك التثبيت لاحقاً');
+        }
+        deferredPrompt = null;
+    };
+    
+    window.addEventListener('appinstalled', () => {
+        showToast('التطبيق مثبت ✅');
+        installBtn.style.display = 'none';
+        deferredPrompt = null;
+    });
+    
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        installBtn.style.display = 'none';
+    }
+}
+
 // ===== إضافة شخص =====
 function addPerson() {
     const name = document.getElementById('newPersonName').value.trim();
@@ -253,22 +334,51 @@ function addPerson() {
 // ===== بطاقة =====
 function showCard() {
     const person = persons.find(p => p.id === currentPersonId);
-    const color = personColors[person.colorIndex % 3];
+    const color = personColors[person.colorIndex % 6];
     const dua = duas[Math.floor(Math.random() * duas.length)].replace(/معاذ/g, person.name);
     
     document.getElementById('cardName').textContent = person.name;
     document.getElementById('cardName').style.color = color.primary;
     document.getElementById('cardLabelName').textContent = person.name;
     document.getElementById('cardDua').textContent = dua;
+    document.getElementById('cardDate').textContent = new Date().toLocaleDateString('ar-SA', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
     
     document.getElementById('cardModal').classList.add('active');
 }
 
-function saveImage() {
-    showToast('جاري الحفظ...');
-    // html2canvas هنا
+// ===== حفظ صورة =====
+async function saveImage() {
+    const cardContent = document.querySelector('.card-content');
+    const actions = document.querySelector('.card-actions');
+    
+    actions.style.display = 'none';
+    
+    try {
+        showToast('جاري إنشاء الصورة...');
+        
+        const canvas = await html2canvas(cardContent, {
+            backgroundColor: '#f5f3ee',
+            scale: 3,
+            useCORS: true
+        });
+        
+        const link = document.createElement('a');
+        link.download = `sadaqah-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        
+        showToast('تم حفظ الصورة 📸');
+    } catch (err) {
+        showToast('حدث خطأ، حاول مرة أخرى');
+        console.error(err);
+    } finally {
+        actions.style.display = 'flex';
+    }
 }
 
+// ===== نسخ النص =====
 function copyText() {
     const name = document.getElementById('cardName').textContent;
     const dua = document.getElementById('cardDua').textContent;
@@ -279,7 +389,7 @@ function copyText() {
 // ===== مشاركة =====
 function shareLink() {
     const url = 'https://baraamubarak.github.io/maath-sadaqah';
-    const text = `انضم للتسبيح 🤍\n\n${url}`;
+    const text = `انضم لتسبيح ${globalCount.toLocaleString('ar-SA')} مرة 🤍\n\n${url}`;
     
     if (navigator.share) {
         navigator.share({ title: 'صدقة جارية', text });
