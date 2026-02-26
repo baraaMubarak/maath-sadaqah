@@ -273,41 +273,88 @@ function setupButtons() {
     document.getElementById('shareBtn').onclick = shareLink;
 }
 
+
+
+
 // ===== زر التثبيت =====
 function setupInstallButton() {
     const installBtn = document.getElementById('installBtn');
     if (!installBtn) return;
     
+    // إخفاء الزر افتراضياً
+    installBtn.style.display = 'none';
+    
+    // حدث التثبيت الطبيعي (للأندرويد)
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         installBtn.style.display = 'block';
         installBtn.classList.add('show');
+        console.log('Install prompt ready');
     });
     
+    // عند الضغط على الزر
     installBtn.onclick = async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            showToast('تم تثبيت التطبيق ✅');
-            installBtn.style.display = 'none';
+        if (deferredPrompt) {
+            // طريقة 1: الطريقة الطبيعية
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast('تم تثبيت التطبيق ✅');
+                installBtn.style.display = 'none';
+            }
+            deferredPrompt = null;
         } else {
-            showToast('يمكنك التثبيت لاحقاً');
+            // طريقة 2: تعليمات يدوية
+            showInstallInstructions();
         }
-        deferredPrompt = null;
     };
     
+    // إذا ثبت
     window.addEventListener('appinstalled', () => {
         showToast('التطبيق مثبت ✅');
         installBtn.style.display = 'none';
         deferredPrompt = null;
     });
     
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // إذا كان مثبت مسبقاً
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
         installBtn.style.display = 'none';
+        console.log('Already installed');
+    } else {
+        // إظهار الزر بعد 3 ثواني إذا لم يكن مثبتاً
+        setTimeout(() => {
+            if (!deferredPrompt) {
+                // في iOS أو إذا ما ظهر الحدث
+                installBtn.style.display = 'block';
+                installBtn.classList.add('show');
+                installBtn.innerHTML = '📲 أضف للشاشة الرئيسية';
+            }
+        }, 3000);
     }
 }
+
+// ===== تعليمات التثبيت اليدوي =====
+function showInstallInstructions() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let message = '';
+    if (isIOS) {
+        message = 'اضغط على ⎋ ثم "أضف إلى الشاشة الرئيسية"';
+    } else if (isAndroid) {
+        message = 'اضغط على ⋮ ثم "إضافة إلى الشاشة الرئيسية"';
+    } else {
+        message = 'اضغط على ⋮ ثم "تثبيت التطبيق"';
+    }
+    
+    alert(message);
+}
+
+
+
+
 
 // ===== إضافة شخص =====
 function addPerson() {
