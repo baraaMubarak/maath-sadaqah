@@ -3,26 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختبار</title>
-    <style>
-        body { font-size: 30px; text-align: center; padding: 50px; }
-        #test { color: green; }
-    </style>
+    <title>صدقة جارية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600&family=El+Messiri:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4a5d4a">
 </head>
 <body>
-    <div id="test">جاري التحميل...</div>
-    <button onclick="changeText()">اضغط هنا</button>
-    
-    <script>
-        function changeText() {
-            document.getElementById('test').innerHTML = 'JavaScript شغال ✅';
-            document.getElementById('test').style.color = 'blue';
-        }
-        
-        // اختبار تلقائي
-        setTimeout(() => {
-            document.getElementById('test').innerHTML = 'الصفحة جاهزة';
-        }, 1000);
-    </script>
+    <!-- نفس الـ HTML السابق -->
+    <div class="container">
+        <header class="header">
+            <div class="header-top">
+                <button class="back-btn" id="backBtn" style="display: none;">←</button>
+                <div class="person-selector" id="personSelector">
+                    <div class="current-person">
+                        <div class="person-avatar" id="personAvatar">م</div>
+                        <span class="person-name" id="personName">معاذ</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                </div>
+                <button class="add-person-btn" id="addPersonBtn">+</button>
+            </div>
+            <div class="line"></div>
+            <p>صدقة جارية</p>
+        </header>
+
+        <div class="persons-list" id="personsList">
+            <div class="persons-scroll" id="personsScroll"></div>
+        </div>
+
+        <section class="global-box">
+            <div class="label">المجموع العام</div>
+            <div class="number" id="globalCount">0</div>
+            <div class="name" id="globalName">دعاء لـ معاذ</div>
+        </section>
+
+        <section class="tasbih-box">
+            <div class="personal-count">مساهمتك: <strong id="personalCount">0</strong></div>
+            <div class="tasbih-circle" id="tasbihBtn"><span>سبحان الله</span></div>
+            <div class="dots" id="dots"></div>
+        </section>
+
+        <div class="buttons">
+            <button class="btn" id="showCardBtn">بطاقة المشاركة</button>
+            <button class="btn primary" id="shareBtn">شارك التطبيق</button>
+        </div>
+
+        <button class="btn install-btn" id="installBtn" style="display: none;">📲 ثبّت التطبيق</button>
+
+        <section class="dua-box">
+            <div class="dua-text" id="duaText">اللهم اغفر لمعاذ وارحمه وعافه واعف عنه</div>
+            <button class="dua-btn" id="duaBtn">ادعُ له</button>
+        </section>
+
+        <footer class="footer">صدقة جارية<br>اللهم اجعلها في عليين</footer>
+    </div>
+
+    <!-- Modal إضافة شخص -->
+    <div class="modal-overlay" id="addPersonModal">
+        <div class="add-person-modal">
+            <h3>إضافة شخص جديد</h3>
+            <input type="text" id="newPersonName" placeholder="اسم الشخص">
+            <div class="modal-actions">
+                <button class="btn cancel" id="cancelBtn">إلغاء</button>
+                <button class="btn primary" id="addBtn">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal البطاقة -->
+    <div class="modal" id="cardModal">
+        <div class="card-content">
+            <h2 id="cardName">معاذ</h2>
+            <div class="line"></div>
+            <div class="label">دعاء لـ <span id="cardLabelName">معاذ</span></div>
+            <div class="dua-box">
+                <div class="dua" id="cardDua">اللهم اجعل القرآن ربيع قلبه</div>
+            </div>
+        </div>
+        <div class="card-actions">
+            <button class="save-btn" id="saveBtn">حفظ كصورة</button>
+            <button class="copy-btn" id="copyBtn">نسخ النص</button>
+            <button class="close-btn" id="closeBtn">إغلاق</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
