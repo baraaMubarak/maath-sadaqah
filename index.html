@@ -3,148 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صدقة جارية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600&family=El+Messiri:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4a5d4a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="صدقة جارية">
+    <title>اختبار</title>
+    <style>
+        body { font-size: 30px; text-align: center; padding: 50px; }
+        #test { color: green; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header جديد مع اختيار الشخص -->
-        <header class="header">
-            <div class="header-top">
-                <button class="back-btn" id="backBtn" style="display: none;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18l6-6-6-6"/>
-                    </svg>
-                </button>
-                
-                <div class="person-selector" id="personSelector">
-                    <div class="current-person">
-                        <div class="person-avatar" id="personAvatar">م</div>
-                        <span class="person-name" id="personName">معاذ</span>
-                        <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <button class="add-person-btn" id="addPersonBtn" title="إضافة شخص">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="line"></div>
-            <p>صدقة جارية</p>
-        </header>
-
-        <!-- قائمة الأشخاص (تظهر عند الضغط) -->
-        <div class="persons-list" id="personsList">
-            <div class="persons-scroll" id="personsScroll">
-                <!-- تُملأ ديناميكياً -->
-            </div>
-        </div>
-
-        <section class="global-box">
-            <div class="label">المجموع العام</div>
-            <div class="number" id="globalCount">0</div>
-            <div class="name" id="globalName">دعاء لـ معاذ</div>
-        </section>
-
-        <section class="tasbih-box">
-            <div class="personal-count">
-                مساهمتك: <strong id="personalCount">0</strong>
-            </div>
-            <div class="tasbih-circle" id="tasbihBtn">
-                <span>سبحان الله</span>
-            </div>
-            <div class="dots" id="dots"></div>
-        </section>
-
-        <div class="buttons">
-            <button class="btn" onclick="showCard()">بطاقة المشاركة</button>
-            <button class="btn primary" onclick="shareLink()">شارك التطبيق</button>
-        </div>
-
-        <button class="btn install-btn" id="installBtn" style="display: none;">
-            📲 ثبّت التطبيق
-        </button>
-
-        <section class="dua-box">
-            <div class="dua-text" id="duaText">اللهم اغفر لمعاذ وارحمه وعافه واعف عنه</div>
-            <button class="dua-btn" onclick="newDua()">ادعُ له</button>
-        </section>
-
-        <footer class="footer">
-            صدقة جارية<br>اللهم اجعلها في عليين
-        </footer>
-    </div>
-
-    <!-- Modal إضافة شخص -->
-    <div class="modal-overlay" id="addPersonModal">
-        <div class="add-person-modal">
-            <h3>إضافة شخص جديد</h3>
-            <div class="input-group">
-                <input type="text" id="newPersonName" placeholder="اسم الشخص" maxlength="20">
-                <div class="color-preview" id="colorPreview"></div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn cancel" onclick="closeAddPersonModal()">إلغاء</button>
-                <button class="btn primary" onclick="addNewPerson()">إضافة</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal البطاقة -->
-    <div class="modal" id="cardModal">
-        <div class="card-content" id="cardContent">
-            <h2 id="cardName">معاذ</h2>
-            <div class="line"></div>
-            <div class="label">دعاء لـ <span id="cardLabelName">معاذ</span></div>
-            <div class="dua-box">
-                <div class="dua" id="cardDua">اللهم اجعل القرآن ربيع قلبه</div>
-            </div>
-            <div class="date" id="cardDate"></div>
-        </div>
-        <div class="card-actions">
-            <button class="save-btn" onclick="saveImage()">حفظ كصورة</button>
-            <button class="copy-btn" onclick="copyText()">نسخ النص</button>
-            <button class="close-btn" onclick="closeCard()">إغلاق</button>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
-
-<script>
-    // إنشاء رقم عشوائي بناءً على الوقت الحالي
-    const timestamp = Date.now(); // مثال: 1708871234567
+    <div id="test">جاري التحميل...</div>
+    <button onclick="changeText()">اضغط هنا</button>
     
-    // إنشاء عنصر script جديد
-    const script = document.createElement('script');
-    script.type = 'module';
-    
-    // الرابط يصبح: js/main.js?v=1708871234567
-    script.src = 'js/main.js?v=' + timestamp;
-    
-    // إضافة الـ script للصفحة
-    document.body.appendChild(script);
-</script>
-
-
-
-
+    <script>
+        function changeText() {
+            document.getElementById('test').innerHTML = 'JavaScript شغال ✅';
+            document.getElementById('test').style.color = 'blue';
+        }
+        
+        // اختبار تلقائي
+        setTimeout(() => {
+            document.getElementById('test').innerHTML = 'الصفحة جاهزة';
+        }, 1000);
+    </script>
 </body>
-<script>
-    // إجبار تحديث الـ CSS
-    document.querySelector('link[rel="stylesheet"]').href = 'css/style.css?v=' + Date.now();
-</script>
-
 </html>
