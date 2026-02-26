@@ -1,3 +1,68 @@
+// ===== Firebase =====
+const firebaseConfig = {
+    apiKey: "AIzaSyC_HXOPcbL80yEbWTx8KFJ5DS2lun5doJY",
+    authDomain: "maath-sadaqah.firebaseapp.com",
+    databaseURL: "https://maath-sadaqah-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "maath-sadaqah",
+    storageBucket: "maath-sadaqah.firebasestorage.app",
+    messagingSenderId: "563608713392",
+    appId: "1:563608713392:web:2f0bd4f0fbdd8790f0e375"
+};
+
+// تحميل Firebase
+const firebaseScript = document.createElement('script');
+firebaseScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+document.head.appendChild(firebaseScript);
+
+const dbScript = document.createElement('script');
+dbScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+document.head.appendChild(dbScript);
+
+let db = null;
+let globalCount = 0;
+
+// انتظار تحميل Firebase
+setTimeout(() => {
+    if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        listenToGlobalCount();
+    }
+}, 1000);
+
+// الاستماع للعداد العام
+function listenToGlobalCount() {
+    if (!db) return;
+    
+    db.ref('global/total').on('value', (snapshot) => {
+        globalCount = snapshot.val() || 0;
+        document.getElementById('globalCount').textContent = globalCount.toLocaleString('ar-SA');
+    });
+}
+
+// تحديث العداد في Firebase
+function updateGlobalCount(personId, count) {
+    if (!db) return;
+    
+    const deviceId = localStorage.getItem('maath_device') || 'device_' + Date.now();
+    localStorage.setItem('maath_device', deviceId);
+    
+    db.ref(`users/${deviceId}_${personId}`).set({
+        count: count,
+        timestamp: Date.now()
+    });
+    
+    // حساب المجموع
+    db.ref('users').once('value', (snapshot) => {
+        let total = 0;
+        snapshot.forEach((child) => {
+            total += child.val().count || 0;
+        });
+        db.ref('global/total').set(total);
+    });
+}
+
+
 // ===== البيانات =====
 const adhkar = ['سبحان الله', 'الحمد لله', 'الله أكبر', 'لا إله إلا الله', 'أستغفر الله'];
 
