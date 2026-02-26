@@ -10,6 +10,7 @@ import {
     copyText, 
     shareLink,
     initPersonsUI,
+    openAddPersonModal,
     closeAddPersonModal,
     updateUIForPerson
 } from './ui.js';
@@ -61,42 +62,51 @@ let currentTasbih = null;
 let globalCount = 0;
 
 function init() {
-    const currentPerson = personsManager.getCurrentPerson();
-    
-    // تحديث UI
-    updateUIForPerson(currentPerson, personsManager.getCurrentPersonIndex());
-    
-    // تهيئة قائمة الأشخاص
-    initPersonsUI(personsManager.getAllPersons(), currentPerson.id, (id) => {
-        const person = personsManager.selectPerson(id);
-        updateUIForPerson(person, personsManager.getCurrentPersonIndex());
-        initTasbih(person);
-    });
+    try {
+        const currentPerson = personsManager.getCurrentPerson();
+        
+        // تحديث UI
+        updateUIForPerson(currentPerson, personsManager.getCurrentPersonIndex());
+        
+        // تهيئة قائمة الأشخاص
+        initPersonsUI(personsManager.getAllPersons(), currentPerson.id, (id) => {
+            const person = personsManager.selectPerson(id);
+            updateUIForPerson(person, personsManager.getCurrentPersonIndex());
+            initTasbih(person);
+        });
 
-    // تهيئة التسبيح
-    initTasbih(currentPerson);
+        // تهيئة التسبيح
+        initTasbih(currentPerson);
 
-    // الاستماع للعداد العام
-    listenToGlobalCount((count) => {
-        globalCount = count;
-        updateGlobalCount(count);
-    });
+        // الاستماع للعداد العام
+        listenToGlobalCount((count) => {
+            globalCount = count;
+            updateGlobalCount(count);
+        });
 
-    // تسجيل Service Worker
-    registerSW();
+        // تسجيل Service Worker
+        registerSW();
 
-    // إعداد زر التثبيت
-    setupInstallButton();
+        // إعداد زر التثبيت
+        setupInstallButton();
 
-    // ربط الأزرار
-    setupButtons();
+        // ربط الأزرار
+        setupButtons();
+        
+    } catch (err) {
+        console.error('Init error:', err);
+    }
 }
 
 function initTasbih(person) {
-    if (currentTasbih) {
-        currentTasbih.destroy();
+    try {
+        if (currentTasbih) {
+            currentTasbih.destroy();
+        }
+        currentTasbih = new Tasbih(person);
+    } catch (err) {
+        console.error('Tasbih error:', err);
     }
-    currentTasbih = new Tasbih(person);
 }
 
 function registerSW() {
@@ -157,13 +167,10 @@ function setupButtons() {
     // زر إضافة شخص
     const addPersonBtn = document.getElementById('addPersonBtn');
     if (addPersonBtn) {
-        addPersonBtn.addEventListener('click', openAddPersonModal);
-    }
-
-    // زر اختيار الشخص
-    const personSelector = document.getElementById('personSelector');
-    if (personSelector) {
-        personSelector.addEventListener('click', togglePersonsList);
+        addPersonBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openAddPersonModal();
+        });
     }
 
     // أزرار Modal إضافة شخص
@@ -178,16 +185,12 @@ function setupButtons() {
     }
 
     // أزرار البطاقة
-    const showCardBtn = document.querySelector('.buttons .btn:not(.primary)');
-    if (showCardBtn) {
-        showCardBtn.addEventListener('click', () => {
+    const buttons = document.querySelectorAll('.buttons .btn');
+    if (buttons.length >= 2) {
+        buttons[0].addEventListener('click', () => {
             showCard(personsManager.getCurrentPerson());
         });
-    }
-
-    const shareBtn = document.querySelector('.buttons .btn.primary');
-    if (shareBtn) {
-        shareBtn.addEventListener('click', () => shareLink(globalCount));
+        buttons[1].addEventListener('click', () => shareLink(globalCount));
     }
 
     // زر الدعاء
@@ -216,28 +219,6 @@ function setupButtons() {
 }
 
 // ===== دوال مساعدة =====
-function togglePersonsList() {
-    const list = document.getElementById('personsList');
-    const selector = document.getElementById('personSelector');
-    
-    if (list && selector) {
-        list.classList.toggle('active');
-        selector.classList.toggle('active');
-    }
-}
-
-function openAddPersonModal() {
-    const modal = document.getElementById('addPersonModal');
-    const input = document.getElementById('newPersonName');
-    if (modal) {
-        modal.classList.add('active');
-        if (input) {
-            input.value = '';
-            input.focus();
-        }
-    }
-}
-
 function addNewPerson() {
     const input = document.getElementById('newPersonName');
     const name = input ? input.value.trim() : '';
